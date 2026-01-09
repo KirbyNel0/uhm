@@ -1,4 +1,4 @@
-use std::{fmt::Debug, io::{Read, Write}, sync::Arc};
+use std::{io::Read, sync::Arc};
 
 pub struct FileDescriptor {
     pub name: String,
@@ -156,73 +156,5 @@ impl Into<WriteTarget> for ReadSource {
             ReadSource::Stdin => WriteTarget::Stdout,
             ReadSource::File(f) => WriteTarget::File(f),
         }
-    }
-}
-
-/// A struct implementing the [std::fmt::Write] trait and writes all input
-/// to console ([`stdout`](std::io::stdout)).
-pub struct ConsoleWriter;
-
-impl std::fmt::Write for ConsoleWriter {
-    fn write_str(&mut self, s: &str) -> std::fmt::Result {
-        match write!(std::io::stdout(), "{}", s) {
-            Ok(o) => Ok(o),
-            Err(_) => Err(std::fmt::Error),
-        }
-    }
-}
-
-/// A struct implementing the [std::fmt::Write] trait and writes all input
-/// in a string.
-///
-/// Use [Self::get] to retrieve the string value.
-pub struct StringWriter {
-    string: String,
-}
-
-impl<'a> StringWriter {
-    /// Creates a new `StringWriter` with an empty string buffer.
-    pub fn new() -> Self {
-        Self {
-            string: String::new(),
-        }
-    }
-
-    /// Creates a new `StringWriter` with a given string as start.
-    /// All new input is added at the end of that string.
-    pub fn from(s: &str) -> Self {
-        Self {
-            string: String::from(s),
-        }
-    }
-
-    /// Retrieve the string which all input got written to.
-    pub fn get(&'a self) -> &'a String {
-        &self.string
-    }
-
-    /// Clear the internal string buffer to start with an empty
-    /// string. See [String::clear].
-    pub fn clear(&mut self) {
-        self.string.clear();
-    }
-}
-
-impl std::fmt::Write for StringWriter {
-    fn write_str(&mut self, s: &str) -> std::fmt::Result {
-        let mut f = String::new();
-        let result = write!(f, "{}", s);
-        self.string.push_str(&f);
-        result
-    }
-
-    fn write_char(&mut self, c: char) -> std::fmt::Result {
-        self.string.push(c);
-        Ok(())
-    }
-
-    fn write_fmt(&mut self, args: std::fmt::Arguments<'_>) -> std::fmt::Result {
-        self.string.push_str(&format!("{}", args));
-        Ok(())
     }
 }

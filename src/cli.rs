@@ -11,8 +11,6 @@ pub struct Args {
     from: String,
     #[arg(long = "stdin", action = clap::ArgAction::SetTrue)]
     stdin: bool,
-    #[arg()]
-    name: Option<String>,
     #[command(subcommand)]
     command: Option<Commands>
 }
@@ -31,9 +29,7 @@ pub fn run(args: Args) {
     };
     match args.command {
         None => {
-            let mut subargs = record::Args::default();
-            subargs.name = args.name;
-            record::run(source, subargs);
+            Args::parse_from(["--help"]);
         },
         Some(command) => match command {
             Commands::Record(args) => record::run(source, args),
@@ -44,7 +40,6 @@ pub fn run(args: Args) {
 
 
 mod utils {
-    use std::fmt::Write;
     use crate::io::{ReadSource, WriteTarget};
     use crate::Uhms;
     
@@ -83,7 +78,7 @@ mod utils {
         }
     }
 
-    pub fn print_stats<W: Write>(uhm: &Uhms, json: bool, writer: &mut W) -> Result<(), std::fmt::Error> {
+    pub fn print_stats<W: std::io::Write>(uhm: &Uhms, json: bool, writer: &mut W) -> Result<(), std::io::Error> {
         let stats = uhm.stats();
         if json {
             match serde_json::to_writer(std::io::stdout(), &stats) {

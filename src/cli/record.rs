@@ -1,10 +1,10 @@
-use crate::{cli_exit, io::{ConsoleWriter, ReadSource, WriteTarget}};
+use crate::{cli_exit, io::{ReadSource, WriteTarget}};
 
 #[derive(clap::Args, Debug)]
 pub struct Args {
     #[arg(short = 'j', long = "json", action = clap::ArgAction::SetTrue)]
     pub json: bool,
-    #[arg(short = 'n', long = "name")]
+    #[arg()]
     pub name: Option<String>,
     #[arg(short = 'm', long = "message")]
     pub notes: Option<String>,
@@ -24,7 +24,7 @@ pub fn run(source: ReadSource, args: Args) {
     if let Some(name) = &args.name {
         println!("Recording for {}...", name);
     } else {
-        print!("Recording...")
+        println!("Recording...");
     };
     let new = crate::record(args.name, args.notes);
     
@@ -34,10 +34,24 @@ pub fn run(source: ReadSource, args: Args) {
         if !std::path::Path::new(f).is_file() {
             Vec::new()
         } else {
-            super::utils::read_file(&source).map_err(|e| cli_exit!("{}", e)).unwrap()
+            match super::utils::read_file(&source) {
+                Ok(e) => e,
+                Err(e) => {
+                    eprintln!("{}", e);
+                    println!("{:?}", new);
+                    cli_exit!()
+                }
+            }
         }
     } else {
-        super::utils::read_file(&source).map_err(|e| cli_exit!("{}", e)).unwrap()
+        match super::utils::read_file(&source) {
+            Ok(e) => e,
+            Err(e) => {
+                eprintln!("{}", e);
+                println!("{:?}", new);
+                cli_exit!()
+            }
+        }
     };
     
     println!();
@@ -47,7 +61,7 @@ pub fn run(source: ReadSource, args: Args) {
     super::utils::write_file(target, &data);
 
     if args.print_stats {
-        let mut writer = ConsoleWriter;
-        super::utils::print_stats(&new, args.json, &mut writer);
+        let mut writer = std::io::stdout();
+        let _ = super::utils::print_stats(&new, args.json, &mut writer);
     }
 }

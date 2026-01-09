@@ -48,12 +48,8 @@ pub fn count(uhms: &Uhms) -> usize {
 /// The count can be retrieved from [uhm::stats::count].
 /// The duration can be retrieved from e.g. [Uhms::duration].
 pub fn per_minute(count: usize, duration: &TimeDelta) -> f64 {
-    let minutes = duration.num_minutes();
-    if minutes == 0 {
-        count as f64
-    } else {
-        (count as f64) / (minutes as f64)
-    }
+    let milliseconds = duration.num_minutes();
+    (count as f64) / (milliseconds as f64 / 1000. / 60.)
 }
 
 /// Number of minutes and remaining time in seconds of the duration.

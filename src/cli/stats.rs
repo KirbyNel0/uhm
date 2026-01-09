@@ -1,6 +1,6 @@
-use std::fmt::Write;
+use std::io::Write;
 
-use crate::{cli_exit, io::{ConsoleWriter, ReadSource}};
+use crate::{cli_exit, io::{ReadSource, WriteTarget}};
 
 #[derive(clap::Args, Debug)]
 pub struct Args {
@@ -14,25 +14,40 @@ impl Default for Args {
     }
 }
 
-#[allow(unused_must_use)] // TODO handle this
 pub fn run(source: ReadSource, args: Args) {
     let data = match super::utils::read_file(&source) {
         Ok(s) => s,
         Err(e) => cli_exit!("{}", e),
     };
+    let target = WriteTarget::Stdout;
     
-    let mut writer = ConsoleWriter;
-    if args.json {writer.write_str("[\n");}
-    for (i, uhm) in data.iter().enumerate() {
-        if args.json {writer.write_char('\t');}
-        super::utils::print_stats(uhm, args.json, &mut writer);
-        if i < data.len() && args.json {
-            writer.write_char(',');
-        }
-        writer.write_char('\n');
-    }
+    let mut buf = Vec::new();
+
     if args.json {
-        writer.write_char(']');
+        let _ = buf.write("[\n".as_bytes());
+        for (i, uhm) in data.iter().enumerate() {
+            let _ = buf.write("\t".as_bytes());
+            let _ = super::utils::print_stats(uhm, true, &mut buf);
+            
+            if i < data.len() {
+                let _ = buf.write(",".as_bytes());
+            }
+            let _ = buf.write("\n".as_bytes());
+        }
+        let _ = buf.write("]".as_bytes());
+    } else {
+        for uhm in &data {
+            let _ = super::utils::print_stats(uhm, false, &mut buf);
+            let _ = buf.write("\n".as_bytes());
+        }
     }
-    writer.write_char('\n');
+    let output = match String::from_utf8(buf) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("Cannot format: {}", e);
+            return;
+        }
+    };
+
+    let _ = target.write(&output);
 }
