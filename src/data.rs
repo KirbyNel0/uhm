@@ -1,14 +1,14 @@
-use chrono::{DateTime, Utc, TimeDelta};
+use chrono::{DateTime, TimeDelta, Utc};
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use crate::stats::UhmStats;
 
 /// The core datastructure of the crate. It stores all data related to a uhm data series.
-/// 
+///
 /// It does _not_ store the actual times at which the uhms occured. Instead, it stores
 /// the start time and ordered offsets for each uhm ([Self::data]).
-/// 
+///
 /// There are also some optional attributes which do not relate to the data directly
 /// but can improve documentation/relationships.
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -42,14 +42,16 @@ impl Uhms {
 }
 
 mod uhm_serde {
-    use serde::{Deserializer, Serializer};
     use chrono::{DateTime, Utc};
+    use serde::{Deserializer, Serializer};
 
     const DATE: &str = "%F %T %z";
 
     /// Serialize a `DateTime<Utc>` into the format of [DATE] using [serde].
     pub fn serialize<S>(value: &DateTime<Utc>, serializer: S) -> Result<S::Ok, S::Error>
-    where S: Serializer {
+    where
+        S: Serializer,
+    {
         serializer.serialize_str(&value.format(DATE).to_string())
     }
 
@@ -58,11 +60,11 @@ mod uhm_serde {
     struct Visitor;
     impl<'de> serde::de::Visitor<'de> for Visitor {
         type Value = DateTime<Utc>;
-    
+
         fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
             write!(formatter, "string formatted like '{}'", DATE)
         }
-        
+
         fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
         where
             E: serde::de::Error,
@@ -70,14 +72,16 @@ mod uhm_serde {
             let result = DateTime::parse_from_str(v, DATE);
             match result {
                 Ok(date) => Ok(date.to_utc()),
-                Err(error) => Err(serde::de::Error::custom(error))
+                Err(error) => Err(serde::de::Error::custom(error)),
             }
         }
     }
 
     /// Deserialize a `DateTime<Utc>` into the format of [DATE] using [serde].
     pub fn deserialize<'de, D>(deserializer: D) -> Result<DateTime<Utc>, D::Error>
-    where D: Deserializer<'de> {
+    where
+        D: Deserializer<'de>,
+    {
         deserializer.deserialize_string(Visitor)
     }
 }

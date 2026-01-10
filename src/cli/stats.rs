@@ -1,6 +1,9 @@
 use std::io::Write;
 
-use crate::{cli_exit, io::{ReadSource, WriteTarget}};
+use crate::{
+    cli_exit,
+    io::{ReadSource, WriteTarget},
+};
 
 #[derive(clap::Args, Debug)]
 pub struct Args {
@@ -20,7 +23,7 @@ pub fn run(source: ReadSource, args: Args) {
         Err(e) => cli_exit!("{}", e),
     };
     let target = WriteTarget::Stdout;
-    
+
     let mut buf = Vec::new();
 
     if args.json {
@@ -28,7 +31,7 @@ pub fn run(source: ReadSource, args: Args) {
         for (i, uhm) in data.iter().enumerate() {
             let _ = buf.write("\t".as_bytes());
             let _ = super::utils::print_stats(uhm, true, &mut buf);
-            
+
             if i < data.len() {
                 let _ = buf.write(",".as_bytes());
             }

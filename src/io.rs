@@ -15,11 +15,7 @@ pub enum ReadSource {
 
 impl ReadSource {
     pub fn is_stdin(&self) -> bool {
-        if let Self::Stdin = self {
-            true
-        } else {
-            false
-        }
+        if let Self::Stdin = self { true } else { false }
     }
 
     pub fn is_file(&self) -> bool {
@@ -53,7 +49,7 @@ impl ReadSource {
                     Ok(_) => Ok(content),
                     Err(e) => Err(e),
                 }
-            },
+            }
             Self::File(f) => std::fs::read_to_string(f),
         }
     }
@@ -78,7 +74,7 @@ impl ReadSource {
     pub fn read_descriptor_shared(self) -> Result<Arc<FileDescriptor>, Error> {
         match self.read() {
             Ok(content) => Ok(Arc::new(self.descriptor(content))),
-            Err(e) => Err(e)
+            Err(e) => Err(e),
         }
     }
 }
@@ -91,11 +87,7 @@ pub enum WriteTarget {
 
 impl WriteTarget {
     pub fn is_stdout(&self) -> bool {
-        if let Self::Stdout = self {
-            true
-        } else {
-            false
-        }
+        if let Self::Stdout = self { true } else { false }
     }
 
     pub fn is_file(&self) -> bool {

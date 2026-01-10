@@ -1,4 +1,7 @@
-use crate::{cli_exit, io::{ReadSource, WriteTarget}};
+use crate::{
+    cli_exit,
+    io::{ReadSource, WriteTarget},
+};
 
 #[derive(clap::Args, Debug)]
 pub struct Args {
@@ -16,7 +19,13 @@ pub struct Args {
 
 impl Default for Args {
     fn default() -> Self {
-        Self { json: false, name: None, notes: None, to: String::from("uhm.json"), print_stats: true }
+        Self {
+            json: false,
+            name: None,
+            notes: None,
+            to: String::from("uhm.json"),
+            print_stats: true,
+        }
     }
 }
 
@@ -27,7 +36,7 @@ pub fn run(source: ReadSource, args: Args) {
         println!("Recording...");
     };
     let new = crate::record(args.name, args.notes);
-    
+
     // append to file
     let mut data = if let ReadSource::File(f) = &source {
         // Could not read file
@@ -53,9 +62,9 @@ pub fn run(source: ReadSource, args: Args) {
             }
         }
     };
-    
+
     println!();
-    
+
     let target = WriteTarget::File(args.to);
     data.push(new.clone());
     super::utils::write_file(target, &data);

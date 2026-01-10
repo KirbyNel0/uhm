@@ -1,24 +1,27 @@
 use clap::{Parser, Subcommand};
 
-use crate::io::{ReadSource};
+use crate::io::ReadSource;
 
+pub mod plot;
 pub mod record;
 pub mod stats;
 
 #[derive(Parser, Debug)]
+#[command(arg_required_else_help = true)]
 pub struct Args {
     #[arg(short = 'f', long = "file", default_value = "uhm.json")]
     from: String,
     #[arg(long = "stdin", action = clap::ArgAction::SetTrue)]
     stdin: bool,
     #[command(subcommand)]
-    command: Option<Commands>
+    command: Option<Commands>,
 }
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
     Record(record::Args),
     Stats(stats::Args),
+    Plot(plot::Args),
 }
 
 pub fn run(args: Args) {
@@ -30,19 +33,19 @@ pub fn run(args: Args) {
     match args.command {
         None => {
             Args::parse_from(["--help"]);
-        },
+        }
         Some(command) => match command {
             Commands::Record(args) => record::run(source, args),
             Commands::Stats(args) => stats::run(source, args),
+            Commands::Plot(args) => plot::run(source, args),
         },
     };
 }
 
-
 mod utils {
-    use crate::io::{ReadSource, WriteTarget};
     use crate::Uhms;
-    
+    use crate::io::{ReadSource, WriteTarget};
+
     #[macro_export]
     macro_rules! cli_exit {
         () => {
@@ -62,7 +65,11 @@ mod utils {
 
         match serde_json::from_str(&content) {
             Ok(content) => Ok(content),
-            Err(e) => cli_exit!("Cannot parse input from {}: {}", source.map("stdin", |f| f), e),
+            Err(e) => cli_exit!(
+                "Cannot parse input from {}: {}",
+                source.map("stdin", |f| f),
+                e
+            ),
         }
     }
 
@@ -73,12 +80,16 @@ mod utils {
         };
 
         match target.write(&formatted) {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(e) => cli_exit!("Cannot write to {}: {}", target.map("stdout", |f| f), e),
         }
     }
 
-    pub fn print_stats<W: std::io::Write>(uhm: &Uhms, json: bool, writer: &mut W) -> Result<(), std::io::Error> {
+    pub fn print_stats<W: std::io::Write>(
+        uhm: &Uhms,
+        json: bool,
+        writer: &mut W,
+    ) -> Result<(), std::io::Error> {
         let stats = uhm.stats();
         if json {
             match serde_json::to_writer(std::io::stdout(), &stats) {
@@ -93,7 +104,11 @@ mod utils {
             }
 
             writeln!(writer, " > Count     {} uhm", stats.count)?;
-            writeln!(writer, " > Duration  {}:{:02} min", stats.min_sec.0, stats.min_sec.1)?;
+            writeln!(
+                writer,
+                " > Duration  {}:{:02} min",
+                stats.min_sec.0, stats.min_sec.1
+            )?;
             writeln!(writer, " > Mean      {:.2} s", stats.delay_mean / 1000.)?;
             writeln!(writer, " > Deviation {:.2} s", stats.delay_std / 1000.)?;
             writeln!(writer, " > Score     {} uhm/min", stats.per_minute)?;

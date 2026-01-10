@@ -1,10 +1,10 @@
 use chrono::TimeDelta;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 use crate::data::Uhms;
 
 /// This struct holds stats for a data series of an [Uhm].
-/// 
+///
 /// It stores the results of all functions inside the [uhm::stats] module.
 /// If you need a single stat, use the corresponding function of this module.
 /// If you need all of them, use [UhmStats::new].
@@ -32,8 +32,14 @@ impl UhmStats {
         let delay_std = std(&uhms.data);
         let min_sec = min_sec(&duration);
         let per_minute = per_minute(count, &duration);
-        
-        Self { count, delay_mean, delay_std, min_sec, per_minute }
+
+        Self {
+            count,
+            delay_mean,
+            delay_std,
+            min_sec,
+            per_minute,
+        }
     }
 }
 
@@ -44,7 +50,7 @@ pub fn count(uhms: &Uhms) -> usize {
 
 /// Calculate the average number of uhms per minute, averaged over the whole
 /// duration.
-/// 
+///
 /// The count can be retrieved from [uhm::stats::count].
 /// The duration can be retrieved from e.g. [Uhms::duration].
 pub fn per_minute(count: usize, duration: &TimeDelta) -> f64 {
@@ -53,7 +59,7 @@ pub fn per_minute(count: usize, duration: &TimeDelta) -> f64 {
 }
 
 /// Number of minutes and remaining time in seconds of the duration.
-/// 
+///
 /// The duration can be retrieved from e.g. [Uhms::duration].
 pub fn min_sec(duration: &TimeDelta) -> (i64, f64) {
     let minutes = duration.num_minutes();
@@ -62,7 +68,7 @@ pub fn min_sec(duration: &TimeDelta) -> (i64, f64) {
 }
 
 /// Calculate the mean/average value of the given series.
-/// 
+///
 /// $ \bar{x} = \frac{1}{n} * \sum_{i = 1}^n x_i $
 pub fn mean(items: &Vec<i64>) -> f64 {
     let mut sum = 0;
@@ -73,7 +79,7 @@ pub fn mean(items: &Vec<i64>) -> f64 {
 }
 
 /// Calculate the variance of the given series.
-/// 
+///
 /// $ Var(X) = \frac{1}{n} * \sum_{i = 1}^n (x_i - \bar{x})^2 $
 pub fn var(items: &Vec<i64>) -> f64 {
     let mean = mean(items);
@@ -85,7 +91,7 @@ pub fn var(items: &Vec<i64>) -> f64 {
 }
 
 /// Calculate the standard deviation of the given series.
-/// 
+///
 /// $ Std(X) = \sqrt{Var(X)} $
 pub fn std(items: &Vec<i64>) -> f64 {
     var(items).sqrt()
