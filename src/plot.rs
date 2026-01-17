@@ -142,6 +142,13 @@ impl Default for Stroke {
     }
 }
 
+impl Stroke {
+    pub fn color(mut self, color: Color) -> Self {
+        self.color = color;
+        self
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Line {
     pub from: Point,
@@ -276,6 +283,11 @@ impl Text {
 
     pub fn at<P: Into<Point>>(mut self, point: P) -> Self {
         self.location = point.into();
+        self
+    }
+
+    pub fn stroke(mut self, stroke: Stroke) -> Self {
+        self.stroke = stroke;
         self
     }
 }

@@ -54,7 +54,7 @@ pub fn count(uhms: &Uhms) -> usize {
 /// The count can be retrieved from [uhm::stats::count].
 /// The duration can be retrieved from e.g. [Uhms::duration].
 pub fn per_minute(count: usize, duration: &TimeDelta) -> f64 {
-    let milliseconds = duration.num_minutes();
+    let milliseconds = duration.num_milliseconds();
     (count as f64) / (milliseconds as f64 / 1000. / 60.)
 }
 
@@ -64,7 +64,7 @@ pub fn per_minute(count: usize, duration: &TimeDelta) -> f64 {
 pub fn min_sec(duration: &TimeDelta) -> (i64, f64) {
     let minutes = duration.num_minutes();
     let seconds = duration.num_seconds();
-    (minutes, seconds as f64 - minutes as f64 / 60.)
+    (minutes, seconds as f64 - (minutes as f64 * 60.))
 }
 
 /// Calculate the mean/average value of the given series.

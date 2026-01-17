@@ -106,12 +106,12 @@ mod utils {
             writeln!(writer, " > Count     {} uhm", stats.count)?;
             writeln!(
                 writer,
-                " > Duration  {}:{:02} min",
+                " > Duration  {}:{:02.0} min",
                 stats.min_sec.0, stats.min_sec.1
             )?;
             writeln!(writer, " > Mean      {:.2} s", stats.delay_mean / 1000.)?;
             writeln!(writer, " > Deviation {:.2} s", stats.delay_std / 1000.)?;
-            writeln!(writer, " > Score     {} uhm/min", stats.per_minute)?;
+            writeln!(writer, " > Score     {:.2} uhm/min", stats.per_minute)?;
 
             Ok(())
         }

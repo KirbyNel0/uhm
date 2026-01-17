@@ -28,7 +28,7 @@ pub fn record(name: Option<String>, notes: Option<String>) -> Uhms {
             _ => {
                 let next = chrono::Utc::now();
 
-                values.push((next - prev).num_milliseconds() as i64);
+                values.push((next - prev).num_milliseconds());
                 prev = next;
 
                 print!("\r=> {} ", values.len());
@@ -62,19 +62,20 @@ pub fn plot_uhm(uhm: &crate::Uhms, c: &mut plot::Canvas, options: &plot::PlotOpt
 
     c.draw(
         plot::Text::default()
-            .content(name)
+            .content(format!("{} ({:.2} uhm/min)", name, crate::stats::per_minute(uhm.data.len(), &uhm.duration())))
             .anchor(plot::Anchor::East)
             .at((x - 0.5, y))
+            .stroke(plot::Stroke::default().color(plot::Color::none()))
     );
 
     c.draw(
         plot::Line::default()
             .start((x, y))
-            .end((x + milliseconds as f64 * millisecond_width, y)),
+            .end((x + ((milliseconds as f64) * millisecond_width), y)),
     );
 
     for offset in &uhm.data {
-        x += *offset as f64;
-        c.draw(plot::Circle::default().at((x, y)).radius(0.3));
+        x += (*offset as f64 / 1000.) * millisecond_width;
+        c.draw(plot::Circle::default().at((x, y)).radius(0.05));
     }
 }
